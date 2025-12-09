@@ -15,8 +15,10 @@ player_y = 600
 clock = pygame.time.Clock()
 running = True
 # Enemy
-enemy_img = pygame.Surface((40, 30))
-enemy_img.fill((255, 0, 0))
+# enemy_img = pygame.Surface((100, 100))
+# enemy_img.fill((0, 255, 0))
+enemy_img = pygame.image.load("alien.png")
+enemy_img = pygame.transform.scale(enemy_img, (60,50))
 enemy_speed = 2
 enemies = []
 for _ in range(6):
@@ -36,25 +38,39 @@ speed = 10
 while running:
     # poll for events
     # pygame.QUIT event means the user clicked X to close your window
+    keys = pygame.key.get_pressed()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-    keys = pygame.key.get_pressed()
+        if event.type == pygame.KEYDOWN:
+         if event.key == pygame.K_SPACE:
+            bullet_x = player_x + player_img.get_width()//2-2
+            bullet_y = player_y + player_img.get_height()
+            bullets.append([bullet_x, bullet_y])
+    
     if keys[pygame.K_LEFT] or keys[pygame.K_a]:
         player_x -= speed
     if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
         player_x += speed
-    if keys[pygame.K_SPACE]:
-        bullet_x = player_x + player_img.get_width()
-        bullet_y = player_y + player_img.get_height()
-        bullets.append([bullet_x, bullet_y])
+    
 
     # fill the screen with a color to wipe away anything from last frame
     screen.fill("purple")
 
     # RENDER YOUR GAME HERE
-    for bullet in bullets:
+    for bullet in bullets[:]:
         bullet[1] -= speed
+        if bullet [1]<0:
+            bullets.remove(bullet)
+    for bullet in bullets[:]:
+        bullet_rect = pygame.Rect(bullet[0], bullet[1], 5, 15)    
+        for enemy in enemies[:]:
+            enemy_rect = pygame.Rect(enemy[0], enemy[1], 60, 50)    
+            if bullet_rect.colliderect(enemy_rect):
+                enemies.remove(enemy)
+                bullets.remove(bullet)
+                # score = score+1
+                score += 1
     screen.blit(player_img, (player_x,player_y))
     # Draw enemies
     for ex, ey in enemies:
